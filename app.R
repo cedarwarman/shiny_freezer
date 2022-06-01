@@ -27,13 +27,14 @@ make_temp_plot <- function(input_df) {
                     "<br>Temperature: <b>", temp_c, " ºC</b>"))) +
     # geom_smooth(method = "loess", se = FALSE, span = 0.01, color = "white", size = 0.5) +
     geom_point(size = 2, shape = 16, alpha = 1, color = "blue") +
+    geom_hline(yintercept = -65, size = 1, linetype = "dashed", color = "orange") +
     scale_y_continuous(breaks = seq(-90, 0, 10),
                        labels = seq(-90, 0, 10),
                        limits = c(-90, 0)) +
     labs(title = "Freezer temperature", x = "Time", y = "ºC") +
     theme_bw() +
     theme(
-      plot.title = element_text(size = 22, face = "bold"),
+      plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
       panel.border = element_blank(),
       panel.grid = element_blank(),
       axis.line = element_line(size = 2, color = "black"),
