@@ -3,6 +3,7 @@ library(lubridate)
 library(googlesheets4)
 library(ggplot2)
 library(plotly)
+library(bslib)
 
 # Functions ---------------------------------------------------------------
 import_dataset <- function(sheet_id) {
@@ -31,10 +32,10 @@ make_temp_plot <- function(input_df) {
     scale_y_continuous(breaks = seq(-90, 0, 10),
                        labels = seq(-90, 0, 10),
                        limits = c(-90, 0)) +
-    labs(title = "Freezer temperature", x = "Time", y = "ºC") +
+    labs(x = "Time", y = "ºC") +
     theme_bw() +
     theme(
-      plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+      plot.title = element_blank(),
       panel.border = element_blank(),
       panel.grid = element_blank(),
       axis.line = element_line(size = 2, color = "black"),
@@ -47,10 +48,34 @@ make_temp_plot <- function(input_df) {
   return(output_plot)
 }
 
-
-ui <- fluidPage(
-  plotlyOutput("freezer_plot")
+ui <- bootstrapPage(
+  tags$style(type='text/css', "label { font-size: 28px;
+                                                line-height: 28px;
+                                                font-weight: bold;
+                                                margin-top: 20px; }
+                             .selectize-input { font-size: 28px;
+                                                line-height: 40px;
+                                                font-weight: bold;
+                                                vertical-align: middle;
+                                                text-align: center }
+                             .selectize-dropdown { font-size: 28px;
+                                                   line-height: 40px;
+                                                   font-weight: bold;
+                                                   vertical-align: middle;
+                                                   text-align: center}"),
+  tags$head(tags$link(rel = "shortcut icon", href = "favicon.ico")),
+  theme  = bs_theme(version = 5),
+  div(class = "container-fluid",
+      div(class = "row justify-content-center",
+          align = "center",
+          div(class = "col-xl-8",
+              h1(strong("Freezer temperature")),
+              plotlyOutput("freezer_plot")
+          )
+      )
+  )
 )
+
 
 server <- function(input, output, session) {
   # Importing the data
