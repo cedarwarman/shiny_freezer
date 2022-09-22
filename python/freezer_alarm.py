@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-import time
+from datetime import datetime
 import pandas as pd
 from gspread_pandas import Spread
 import yagmail
@@ -25,14 +25,14 @@ def open_log_file():
                 f.write('date_time\tmessage\n')
         return(f)
     except:
-        pass
+        print("Failed to open log file")
 
 ### Append log file
 def append_log_file(input_file_handle):
     try:
         input_file_handle.write(
             '{0}\t{1}\n'.format(
-                time.strftime('%Y-%m-%d %H:%M:%S %Z', time.localtime(time.time())),
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 'sent_alarm_email'
             )
         )
@@ -48,9 +48,16 @@ def get_recent_average(input_df):
 ### Get time of last alarm email
 def last_alarm():
     log_file = open_log_file()
+    # I shouldn't have to do this, there's a bug somewhere.
+    log_file.seek(0)
     lines = log_file.readlines()
-    print(lines)
     if len(lines) > 1:
+        last_line = lines[-1].split("\t")
+        date_string = last_line[0]
+        datetime_string = datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S")
+        return(datetime_string)
+    else:
+        pass
         
 
 ### Send alarm email
@@ -64,29 +71,33 @@ def send_email():
         "https://viz.datascience.arizona.edu/freezer/"
     ]
     yag.send('cedardalewarman@gmail.com', 'FREEZER ALARM', contents)
+    print("Sent email")
 
     # Append to log file that you've sent an email
     log_file = open_log_file()
     append_log_file(log_file)
     log_file.close()
+    print("Appended log file")
 
 ### Main
 def main():
     # Importing the sheet and converting to data frame
     df = import_sheet("1KpIEUuMpRD8q3DDNNUeJ1BqSztl_nAzA8DWtdTHFnVY")
-    print(df)
 
     # Getting the average temp over the last 10 mins (readings every 2 mins)
     recent_average = get_recent_average(df)
-    print(recent_average)
+    print("Average temp: ", recent_average)
 
-    # If the temp is greater than -65 then it will send an email. 
-    # Calculating time since last alert sent
-    
-    # Sending email:
-    send_email()
+    # Time since last alarm
+    last_alarm_time = last_alarm()
+    time_difference = datetime.now() - last_alarm_time
+    time_diff_mins = time_difference.total_seconds() / 60
+    print("Minutes since last alarm: ", time_diff_mins)
 
-
+    # If the temp is greater than -65 and it has been longer than 
+    # 30 minutes since it last sent an email then it will send an email. 
+    if recent_average > -65 and time_diff_mins > 30:
+        send_email()
 
 if __name__ == "__main__":
     main()

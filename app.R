@@ -32,7 +32,7 @@ make_temp_plot <- function(input_df) {
     scale_y_continuous(breaks = seq(-90, 0, 10),
                        labels = seq(-90, 0, 10),
                        limits = c(-90, 0)) +
-    labs(x = "Date and Time", y = "ºC") +
+    labs(x = "Date and Time", y = " ºC ") +
     theme_bw() +
     theme(
       plot.title = element_blank(),
