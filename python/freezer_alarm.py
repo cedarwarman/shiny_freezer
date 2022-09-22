@@ -22,17 +22,13 @@ def open_log_file():
     try:
         f = open(log_file_path, 'a+')
         if os.stat(log_file_path).st_size == 0:
-                f.write('date\tmessage\n')
+                f.write('date_time\tmessage\n')
         return(f)
     except:
         pass
 
 ### Append log file
 def append_log_file(input_file_handle):
-
-#    string = '{0}\t{1}\n'.format(datetime.now(), 'sent_alarm_email')
-#    print(string)
-
     try:
         input_file_handle.write(
             '{0}\t{1}\n'.format(
@@ -48,6 +44,14 @@ def get_recent_average(input_df):
     tail = input_df.tail(5)
     average = tail['temp_c'].mean()
     return(average)
+
+### Get time of last alarm email
+def last_alarm():
+    log_file = open_log_file()
+    lines = log_file.readlines()
+    print(lines)
+    if len(lines) > 1:
+        
 
 ### Send alarm email
 def send_email():
@@ -77,6 +81,8 @@ def main():
     print(recent_average)
 
     # If the temp is greater than -65 then it will send an email. 
+    # Calculating time since last alert sent
+    
     # Sending email:
     send_email()
 
