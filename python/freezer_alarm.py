@@ -15,7 +15,11 @@ def import_sheet(sheet_id):
 
 ### Open log file
 def open_log_file():
-    log_file_path = os.path.join(os.getcwd(), "python_data", "freezer_alarm_log.tsv")
+    log_file_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), 
+        "python_data", 
+        "freezer_alarm_log.tsv"
+    )
     if not os.path.exists(os.path.join(os.getcwd(), "python_data")):
         os.makedirs(os.path.join(os.getcwd(), "python_data"))
 
@@ -65,7 +69,11 @@ def send_email():
     # Requires you to have initialized your username and password in yagmail:
     # yagmail.register('palanivelu.lab.freezer@gmail.com', 'password_here')
     # This stores your credentials in the local systen with Python keyring.
-    yag = yagmail.SMTP('palanivelu.lab.freezer')
+    #yag = yagmail.SMTP('palanivelu.lab.freezer')
+
+    # For cron I just had to write the password in plain text. I think it's ok 
+    # since it's an application password that can be revoked.
+    yag = yagmail.SMTP('palanivelu.lab.freezer', '')
     contents = [
         "Alert! The freezer has warmed a dangerous amount. See details here:",
         "https://viz.datascience.arizona.edu/freezer/"
@@ -86,13 +94,11 @@ def main():
 
     # Getting the average temp over the last 10 mins (readings every 2 mins)
     recent_average = get_recent_average(df)
-    print("Average temp: ", recent_average)
 
     # Time since last alarm
     last_alarm_time = last_alarm()
     time_difference = datetime.now() - last_alarm_time
     time_diff_mins = time_difference.total_seconds() / 60
-    print("Minutes since last alarm: ", time_diff_mins)
 
     # If the temp is greater than -65 and it has been longer than 
     # 30 minutes since it last sent an email then it will send an email. 
