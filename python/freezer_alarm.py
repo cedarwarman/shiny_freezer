@@ -73,12 +73,14 @@ def send_email():
 
     # For cron I just had to write the password in plain text. I think it's ok 
     # since it's an application password that can be revoked.
-    yag = yagmail.SMTP('palanivelu.lab.freezer', '')
+    yag = yagmail.SMTP('palanivelu.lab.freezer', 'PASSWORD_HERE')
     contents = [
         "Alert! The freezer has warmed a dangerous amount. See details here:",
         "https://viz.datascience.arizona.edu/freezer/"
     ]
     yag.send('cedardalewarman@gmail.com', 'FREEZER ALARM', contents)
+    yag.send('emmajong@arizona.edu', 'FREEZER ALARM', contents)
+    yag.send('rpalaniv@arizona.edu', 'FREEZER ALARM', contents)
     print("Sent email")
 
     # Append to log file that you've sent an email
