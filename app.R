@@ -50,14 +50,14 @@ make_temp_plot <- function(input_df) {
   output_plot <- output_plot %>% layout(
     shapes = list(hline(-65)), 
     xaxis = list(title = list(text = "Date and time",
-                              font = list(size = 28)),
+                              font = list(size = 24)),
                  showline = T,
                  showgrid = F,
                  linewidth = 1,
                  linecolor = "white",
                  tickfont = list(size = 15)),
     yaxis = list(title = list(text = "ºC",
-                              font = list(size = 28),
+                              font = list(size = 24),
                               standoff = 10),
                  showline = T,
                  zeroline = F,
@@ -97,7 +97,7 @@ ui <- bootstrapPage(
           align = "center",
           div(class = "col-xl-8",
               h1(strong("Freezer temperature")),
-              plotlyOutput("freezer_plot", height = "60vh")
+              plotlyOutput("freezer_plot", height = "50vh")
           )
       )
   )

@@ -5,9 +5,9 @@ account: cedar
 server: viz.datascience.arizona.edu
 hostUrl: https://viz.datascience.arizona.edu/__api__
 appId: 65
-bundleId: 739
+bundleId: 741
 url: https://viz.datascience.arizona.edu:443/freezer/
-when: 1664082245.31835
-lastSyncTime: 1664082245.31837
+when: 1664134304.65679
+lastSyncTime: 1664134304.6568
 asMultiple: FALSE
 asStatic: FALSE
