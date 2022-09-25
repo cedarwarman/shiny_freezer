@@ -11,7 +11,14 @@ def import_sheet(sheet_id):
     sheet = Spread(sheet_id)
     df = sheet.sheet_to_df(index=None)
     df['temp_c'] = df['temp_c'].astype(float)
-    return(df)
+    return df
+
+### Import email addresses
+def import_email_addresses(sheet_id):
+    sheet = Spread(sheet_id)
+    df = sheet.sheet_to_df(index=None)
+    email_list = df[df.columns[0]].tolist()
+    return email_list
 
 ### Open log file
 def open_log_file():
@@ -27,7 +34,7 @@ def open_log_file():
         f = open(log_file_path, 'a+')
         if os.stat(log_file_path).st_size == 0:
                 f.write('date_time\tmessage\n')
-        return(f)
+        return f
     except:
         print("Failed to open log file")
 
@@ -47,25 +54,24 @@ def append_log_file(input_file_handle):
 def get_recent_average(input_df):
     tail = input_df.tail(5)
     average = tail['temp_c'].mean()
-    return(average)
+    return average
 
 ### Get time of last alarm email
 def last_alarm():
     log_file = open_log_file()
-    # I shouldn't have to do this, there's a bug somewhere.
     log_file.seek(0)
     lines = log_file.readlines()
     if len(lines) > 1:
         last_line = lines[-1].split("\t")
         date_string = last_line[0]
         datetime_string = datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S")
-        return(datetime_string)
+        return datetime_string
     else:
         pass
         
 
 ### Send alarm email
-def send_email():
+def send_email(email_address_input):
     # Requires you to have initialized your username and password in yagmail:
     # yagmail.register('palanivelu.lab.freezer@gmail.com', 'password_here')
     # This stores your credentials in the local systen with Python keyring.
@@ -73,14 +79,17 @@ def send_email():
 
     # For cron I just had to write the password in plain text. I think it's ok 
     # since it's an application password that can be revoked.
-    yag = yagmail.SMTP('palanivelu.lab.freezer', 'PASSWORD_HERE')
+    yag = yagmail.SMTP('palanivelu.lab.freezer', 'PASSSWORD_HERE')
     contents = [
         "Alert! The freezer has warmed a dangerous amount. See details here:",
         "https://viz.datascience.arizona.edu/freezer/"
     ]
-    yag.send('cedardalewarman@gmail.com', 'FREEZER ALARM', contents)
-    yag.send('emmajong@arizona.edu', 'FREEZER ALARM', contents)
-    yag.send('rpalaniv@arizona.edu', 'FREEZER ALARM', contents)
+
+    # Sending the emails
+    for email in email_address_input:
+        print("Sending email to: ", email)
+        yag.send(email, 'FREEZER ALARM', contents)
+        
     print("Sent email")
 
     # Append to log file that you've sent an email
@@ -105,7 +114,8 @@ def main():
     # If the temp is greater than -65 and it has been longer than 
     # 30 minutes since it last sent an email then it will send an email. 
     if recent_average > -65 and time_diff_mins > 30:
-        send_email()
+        email_addresses = import_email_addresses("13alVNqXTpBhHDY2qK2oB4yfHmHJhnc47HlDJunqbhlc")
+        send_email(email_addresses)
 
 if __name__ == "__main__":
     main()
