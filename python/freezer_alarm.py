@@ -56,6 +56,17 @@ def get_recent_average(input_df):
     average = tail['temp_c'].mean()
     return average
 
+### Get the number of minutes since the last sensor reading
+def last_read(input_df):
+    last_row = input_df.tail(1)
+    last_datetime = last_row.iloc[0][0] +  " " + last_row.iloc[0][1]
+    last_datetime_string = datetime.strptime(last_datetime, "%Y-%m-%d %H:%M:%S")
+
+    time_difference = datetime.now() - last_datetime_string
+    time_diff_mins = time_difference.total_seconds() / 60
+
+    return time_diff_mins
+
 ### Get time of last alarm email
 def last_alarm():
     log_file = open_log_file()
@@ -71,7 +82,7 @@ def last_alarm():
         
 
 ### Send alarm email
-def send_email(email_address_input):
+def send_email(email_address_input, alarm_type):
     # Requires you to have initialized your username and password in yagmail:
     # yagmail.register('palanivelu.lab.freezer@gmail.com', 'password_here')
     # This stores your credentials in the local systen with Python keyring.
@@ -79,16 +90,28 @@ def send_email(email_address_input):
 
     # For cron I just had to write the password in plain text. I think it's ok 
     # since it's an application password that can be revoked.
-    yag = yagmail.SMTP('palanivelu.lab.freezer', 'PASSSWORD_HERE')
-    contents = [
-        "Alert! The freezer has warmed a dangerous amount. See details here:",
-        "https://viz.datascience.arizona.edu/freezer/"
-    ]
+    yag = yagmail.SMTP('palanivelu.lab.freezer', 'PASSWORD_HERE')
+
+    # Sends different emails for if it's a sensor down alert or a high 
+    # temperature alert.
+    if alarm_type == "temp":
+        contents = [
+            "Alert! The freezer has warmed a dangerous amount. See details here:",
+            "https://viz.datascience.arizona.edu/freezer/"
+        ]
+        subject_line = "FREEZER ALARM"
+    if alarm_type == "outage":
+        contents = [
+            "Alert! The freezer sensor is not functioning. See details here:",
+            "https://viz.datascience.arizona.edu/freezer/"
+        ]
+        subject_line = "Freezer sensor down"
+
 
     # Sending the emails
     for email in email_address_input:
         print("Sending email to: ", email)
-        yag.send(email, 'FREEZER ALARM', contents)
+        yag.send(email, subject_line, contents)
         
     print("Sent email")
 
@@ -106,16 +129,27 @@ def main():
     # Getting the average temp over the last 10 mins (readings every 2 mins)
     recent_average = get_recent_average(df)
 
+    # Time since last sensor reading
+    last_read_time = last_read(df)
+    print("Minutes since last read: ", last_read_time)
+
     # Time since last alarm
     last_alarm_time = last_alarm()
     time_difference = datetime.now() - last_alarm_time
     time_diff_mins = time_difference.total_seconds() / 60
+    print("Minutes since last alarm: ", time_diff_mins, "\n")
 
     # If the temp is greater than -65 and it has been longer than 
     # 30 minutes since it last sent an email then it will send an email. 
     if recent_average > -65 and time_diff_mins > 30:
         email_addresses = import_email_addresses("13alVNqXTpBhHDY2qK2oB4yfHmHJhnc47HlDJunqbhlc")
-        send_email(email_addresses)
+        send_email(email_addresses, "temp")
+
+    # Sending an alert if the sensor is not reporting new data
+    if last_read_time > 30 and time_diff_mins > 300:
+        email_addresses = import_email_addresses("13alVNqXTpBhHDY2qK2oB4yfHmHJhnc47HlDJunqbhlc")
+        send_email(email_addresses, "outage")
+        
 
 if __name__ == "__main__":
     main()
